@@ -606,6 +606,11 @@ TEST_CASE("test split") {
   CHECK(array_equal(out[1], array({})).item<bool>());
   CHECK(array_equal(out[2], array({1})).item<bool>());
   CHECK(array_equal(out[3], array({2, 3, 4})).item<bool>());
+
+  // Check data_size buffer span calculation for non-contiguous views
+  x = zeros({100, 100});
+  out = split(x, 2, 1);
+  CHECK_GE(out[0].data_size(), 9950);
 }
 
 TEST_CASE("test flip") {

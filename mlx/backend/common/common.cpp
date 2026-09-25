@@ -206,8 +206,17 @@ void Split::eval(
     size_t offset = indices[i] * in.strides()[axis_];
     auto [new_flags, data_size] = compute_new_flags(
         outputs[i].shape(), in.strides(), in.data_size(), in.flags());
+    size_t buffer_span = 1;
+    const auto& out_shape = outputs[i].shape();
+    const auto& in_strides = in.strides();
+    for (size_t d = 0; d < out_shape.size(); d++) {
+      if (in_strides[d] > 0 && out_shape[d] > 1) {
+        buffer_span += (out_shape[d] - 1) * static_cast<size_t>(in_strides[d]);
+      }
+    }
+    size_t true_span = std::max(data_size, buffer_span);
     outputs[i].copy_shared_buffer(
-        in, in.strides(), new_flags, data_size, offset);
+        in, in.strides(), new_flags, true_span, offset);
   }
 }
 
